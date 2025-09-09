@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Carta romántica</title>
+  <style>
+    /* ===== Reset y base ===== */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html,body { height: 100%; font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+    body {
+      min-height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg,#ff6aa3 0%, #c86dd7 45%, #6b4cff 100%);
+      color: #fff;
+      padding: 30px;
+    }
+
+    /* ===== Contenedor principal ===== */
+    .card-wrap {
+      width: 100%;
+      max-width: 980px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+      border-radius: 20px;
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    header { text-align: center; margin-bottom: 18px; }
+    h1 { font-size: 34px; letter-spacing: -0.02em; }
+    p.lead { margin-top: 8px; opacity: 0.95; }
+
+    .controls { margin-top: 16px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+    .btn {
+      background: #fff; color:#2b2b2b; border-radius:14px; padding:10px 16px;
+      font-weight:600; cursor:pointer; border:none; box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+    }
+    .btn.secondary { background: transparent; color: rgba(255,255,255,0.95); border: 1px solid rgba(255,255,255,0.12); }
+
+    /* ===== Corazones flotando (fondo) ===== */
+    .hearts { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+    .heart {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      transform: rotate(-45deg);
+      opacity: 0.9;
+      animation: floatUp linear infinite;
+      filter: drop-shadow(0 6px 8px rgba(0,0,0,0.25));
+    }
+    .heart:before, .heart:after {
+      content: "";
+      position: absolute;
+      width: 18px; height: 18px;
+      background: radial-gradient(circle at 30% 30%, #fff9, #fff0);
+      border-radius: 50%;
+    }
+    .heart:before { top: -9px; left: 0; }
+    .heart:after { left: 9px; top: 0; }
+
+    @keyframes floatUp {
+      0% { transform: translateY(120vh) rotate(-45deg) scale(0.8); opacity: 0; }
+      10% { opacity: 1; }
+      70% { opacity: 1; }
+      100% { transform: translateY(-20vh) rotate(-45deg) scale(1.2); opacity: 0; }
+    }
+
+    /* ===== Sección recuerdos (carrusel) ===== */
+    .recuerdos { margin-top: 18px; display:flex; gap:18px; align-items:center; justify-content:center; flex-direction:column; }
+    .carousel {
+      width: 100%;
+      max-width: 720px;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      position: relative;
+    }
+    .carousel img { width:100%; height:360px; object-fit:cover; display:block; }
+    .carousel .nav {
+      position:absolute; top:50%; transform:translateY(-50%); width:100%; display:flex; justify-content:space-between; padding:0 12px;
+    }
+    .nav button { background: rgba(255,255,255,0.9); border:none; padding:8px 12px; border-radius:999px; cursor:pointer; font-size:18px; }
+    .counter { text-align:center; margin-top:8px; opacity:0.9; }
+
+    /* ===== Modal carta ===== */
+    .modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.45); display:flex; align-items:center; justify-content:center; z-index:60; }
+    .modal {
+      width: 92%;
+      max-width: 640px;
+      background: #fff; color:#222; border-radius:14px;
+      padding: 20px; box-shadow:0 20px 60px rgba(0,0,0,0.45);
+    }
+    .modal h3 { color:#d63384; margin-bottom:6px; }
+    .letter { white-space: pre-wrap; line-height:1.55; font-size:16px; min-height:120px; }
+    .modal .close { margin-top:14px; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+    .modal .close button { background:#d93386; color:#fff; border:none; padding:8px 12px; border-radius:10px; cursor:pointer; }
+
+    /* ===== Pequeños detalles ===== */
+    .badges { display:flex; gap:8px; justify-content:center; margin-top:14px; flex-wrap:wrap; }
+    .badge { background: rgba(255,255,255,0.08); padding:8px 12px; border-radius:999px; font-weight:600; font-size:13px; }
+    footer { text-align:center; margin-top:14px; opacity:0.95; font-size:13px; }
+
+    /* ===== Responsivo ===== */
+    @media (max-width:720px) {
+      h1 { font-size:26px; }
+      .carousel img { height:220px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="card-wrap" id="app">
+    <div class="hearts" id="hearts"></div>
+
+    <header>
+      <div class="tag badge">Hecho con cariño 💖</div>
+      <h1>Para <span id="girlName">Karina</span></h1>
+      <p class="lead">Un pequeño detalle en una página para decirte que eres especial.</p>
+      <div class="controls">
+        <button class="btn" id="openLetter">💌 Abrir carta</button>
+        <button class="btn secondary" id="goRecuerdos">📷 Tus Flores Favoritas</button>
+      </div>
+    </header>
+
+    <main class="recuerdos">
+      <div class="badges">
+        <div class="badge">Eres increíble</div>
+        <div class="badge">Me encantas</div>
+      </div>
+
+      <div class="carousel" id="carousel">
+        <img id="carouselImage" src="" alt="recuerdo">
+        <div class="nav">
+          <button id="prevBtn">‹</button>
+          <button id="nextBtn">›</button>
+        </div>
+      </div>
+      <div class="counter" id="counter">0 / 0</div>
+    </main>
+
+    <footer>
+      <div>Con cariño, <strong id="yourName">Nilton</strong></div>
+      <div style="margin-top:6px; font-size:13px; opacity:0.9;">Nilton@gomez.</div>
+    </footer>
+  </div>
+
+  <!-- ===== Modal (oculto por defecto) ===== -->
+  <template id="modalTemplate">
+    <div class="modal-backdrop">
+      <div class="modal" role="dialog" aria-modal="true">
+        <h3>Carta para <span id="modalGirl">Ana</span></h3>
+        <div class="letter" id="letterText"></div>
+        <div class="close">
+          <small style="opacity:0.7">Con cariño, <span id="modalYour">Nilton</span></small>
+          <div>
+            <button id="closeModal">Cerrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    /***********************
+     *  PERSONALIZA AQUÍ:
+     ***********************/
+    const GIRL_NAME = "Karina"; // <- nombre de ella
+    const YOUR_NAME = "Nilton"; // <- tu nombre
+    const LETTER_TEXT = `Desde que te conocí, mi mundo se volvió más bonito.
+Gracias por tu risa, por tu energía y por cada minuto que compartimos.
+No sé qué traerá el futuro, pero hoy quiero decirte algo simple:
+me encantas, y me hace feliz pensar en ti karina. 💖`; // <- cambia el mensaje
+
+    const IMAGES = [
+      // Reemplaza con tus URLs de foto preferidas (pueden ser enlaces directos)
+      "https://images.pexels.com/photos/6007739/pexels-photo-6007739.png?auto=compress&cs=tinysrgb&w=1200",
+      "https://images.pexels.com/photos/157524/pexels-photo-157524.jpeg?auto=compress&cs=tinysrgb&w=1200",
+      "https://images.pexels.com/photos/132466/pexels-photo-132466.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    ];
+
+    /***********************
+     *  LÓGICA (no toques si no quieres)
+     ***********************/
+    // Poner nombres en la UI
+    document.getElementById('girlName').textContent = GIRL_NAME;
+    document.getElementById('yourName').textContent = YOUR_NAME;
+
+    // ===== Corazones flotantes =====
+    const heartsRoot = document.getElementById('hearts');
+    function spawnHearts(count = 16) {
+      const colors = ["#ff8ab8","#ff6aa3","#ffb3d9","#ffd1f0","#ff7fbf"];
+      for (let i=0;i<count;i++) {
+        const el = document.createElement('div');
+        el.className = 'heart';
+        // tamaño y posición aleatoria
+        const size = 12 + Math.random()*20;
+        el.style.width = `${size}px`;
+        el.style.height = `${size}px`;
+        el.style.left = `${Math.random()*100}%`;
+        el.style.top = `${Math.random()*100 + 80}%`; // empieza abajo
+        el.style.background = colors[Math.floor(Math.random()*colors.length)];
+        // duración aleatoria
+        const dur = 10 + Math.random()*18;
+        el.style.animationDuration = dur + 's';
+        el.style.opacity = 0.95;
+        el.style.transform = `rotate(-45deg) scale(${0.8 + Math.random()*1.2})`;
+        heartsRoot.appendChild(el);
+      }
+    }
+    spawnHearts(20);
+
+    // ===== Carrusel simple =====
+    let idx = 0;
+    const imgEl = document.getElementById('carouselImage');
+    const counter = document.getElementById('counter');
+    function renderCarousel() {
+      if (!IMAGES.length) {
+        imgEl.src = '';
+        counter.textContent = '0 / 0';
+        return;
+      }
+      imgEl.src = IMAGES[idx];
+      counter.textContent = (idx+1) + ' / ' + IMAGES.length;
+    }
+    document.getElementById('prevBtn').addEventListener('click', () => {
+      idx = (idx - 1 + IMAGES.length) % IMAGES.length;
+      renderCarousel();
+    });
+    document.getElementById('nextBtn').addEventListener('click', () => {
+      idx = (idx + 1) % IMAGES.length;
+      renderCarousel();
+    });
+    document.getElementById('goRecuerdos').addEventListener('click', () => {
+      // desplazar hacia el carrusel (suave)
+      document.getElementById('carousel').scrollIntoView({behavior:'smooth', block:'center'});
+    });
+
+    renderCarousel();
+
+    // ===== Modal de la carta + efecto máquina de escribir =====
+    const openBtn = document.getElementById('openLetter');
+    const modalTemplate = document.getElementById('modalTemplate');
+
+    function openModal() {
+      // clona template
+      const tpl = modalTemplate.content.cloneNode(true);
+      const backdrop = tpl.querySelector('.modal-backdrop');
+      const modalGirl = tpl.getElementById('modalGirl');
+      const modalYour = tpl.getElementById('modalYour');
+      const letterTextEl = tpl.getElementById('letterText');
+      modalGirl.textContent = GIRL_NAME;
+      modalYour.textContent = YOUR_NAME;
+      letterTextEl.textContent = ''; // vaciar antes del typewriter
+      document.body.appendChild(tpl);
+
+      // animación máquina de escribir
+      typeWriter(LETTER_TEXT, letterTextEl, 28);
+
+      // cerrar
+      const closeBtn = document.getElementById('closeModal');
+      closeBtn.addEventListener('click', closeModalFromDOM);
+      // cerrar clic en fondo
+      backdrop.addEventListener('click', (e) => {
+        if (e.target === backdrop) closeModalFromDOM();
+      });
+
+      function closeModalFromDOM() {
+        backdrop.style.opacity = 1;
+        backdrop.style.transition = 'opacity .18s ease';
+        backdrop.style.opacity = 0;
+        setTimeout(() => {
+          backdrop.remove();
+        }, 180);
+      }
+    }
+
+    openBtn.addEventListener('click', openModal);
+
+    function typeWriter(text, el, speed = 30) {
+      let i = 0;
+      el.textContent = '';
+      function step() {
+        if (i <= text.length) {
+          el.textContent = text.slice(0, i);
+          i++;
+          setTimeout(step, speed);
+        }
+      }
+      step();
+    }
+
+    // ===== Pequeño autoplay opcional: rotar imagen cada X segundos =====
+    let autoplay = true;
+    setInterval(() => {
+      if (autoplay && IMAGES.length > 1) {
+        idx = (idx + 1) % IMAGES.length;
+        renderCarousel();
+      }
+    }, 4500);
+
+    // ----- Fin del script -----
+  </script>
+</body>
+</html>
